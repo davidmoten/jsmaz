@@ -52,18 +52,18 @@ public final class SmazTest {
         String s = b.toString();
         assertEquals(s, Smaz.decompress(Smaz.compress(s)));
     }
-    
+
     @Test
     public void roundTripUtf8Extremes() {
         String s = "\u0000\u1000\u9999";
         assertEquals(s, Smaz.decompress(Smaz.compress(s)));
     }
-    
+
     @Test
     public void roundTripRandomAscii() {
         Random r = new Random();
         StringBuilder b = new StringBuilder();
-        for (int i = 0; i < 1024*1024; i++) {
+        for (int i = 0; i < 1024 * 1024; i++) {
             b.append((char) r.nextInt(128));
         }
         String s = b.toString();
@@ -125,6 +125,12 @@ public final class SmazTest {
     public void roundTripTestOnLongUtf8() {
         String s = "ᚠᛇᚻ᛫ᛒᛦᚦ᛫ᚠᚱᚩᚠᚢᚱ᛫ᚠᛁᚱᚪ᛫ᚷᛖᚻᚹᛦᛚᚳᚢᛗ";
         assertEquals(s, Smaz.decompress(Smaz.compress(s)));
+    }
+
+    @Test
+    public void printCompressionFactorForTypicalLogLine() {
+        String s = "2019-11-14 23:15:11.712 INFO  au.gov.amsa.er.craft.tracking.actions.FixBehaviour [default-akka.actor.default-dispatcher-4] - secondary match identifiers=[MMSI=503432000], craftId=18418467884";
+        System.out.println("previousLength = " + s.length() + ", compressed length = " + Smaz.compress(s).length);
     }
 
 }
