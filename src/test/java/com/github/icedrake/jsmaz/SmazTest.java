@@ -23,22 +23,19 @@ import static org.junit.Assert.*;
  * @author icedrake
  */
 public class SmazTest {
-    // immutable smaz instance
-    private Smaz smaz = new Smaz();
-
 
     @Test
     public void simpleTest() {
         String testString = "this is a simple test";
-        byte[] compressed = smaz.compress(testString);
-        String uncompressedString = smaz.decompress(compressed);
+        byte[] compressed = Smaz.compress(testString);
+        String uncompressedString = Smaz.decompress(compressed);
         assertEquals(testString, uncompressedString);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void asciiOnlyTest() {
         String testString = "this is a utf-8 string ÿ";
-        smaz.compress(testString);
+        Smaz.compress(testString);
     }
 
     @Test
@@ -78,7 +75,7 @@ public class SmazTest {
         for (String str : strings) {
             byte[] origBytes = str.getBytes();
             System.out.println(str);
-            byte[] compressedBytes = smaz.compress(str);
+            byte[] compressedBytes = Smaz.compress(str);
             int comprlevel = 100 - ((100 * compressedBytes.length) / origBytes.length);
             if (comprlevel < 0) {
                 output.append(String.format("'%s' enlarged by %d%%\n", str, -comprlevel));
