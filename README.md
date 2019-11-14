@@ -1,34 +1,37 @@
-jsmaz
-======
-jsmaz is a Java port of the Smaz short string compression algorithm by Salvatore Sanfilippo and released as a C
-library at: https://github.com/antirez/smaz
+# jsmaz
+<a href="https://travis-ci.org/davidmoten/jsmaz"><img src="https://travis-ci.org/davidmoten/jsmaz.svg"/></a><br/>
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.davidmoten/jsmaz/badge.svg?style=flat)](https://maven-badges.herokuapp.com/maven-central/com.github.davidmoten/jsmaz)<br/>
+[![codecov](https://codecov.io/gh/davidmoten/jsmaz/branch/master/graph/badge.svg)](https://codecov.io/gh/davidmoten/jsmaz)<br/>
 
-You can also find a Ruby port by Peter Cooper at: https://github.com/peterc/rsmaz
+com.github.davidmoten.jsmaz is a Java port of the Smaz short string compression algorithm by Salvatore Sanfilippo and released as a C library at: https://github.com/antirez/smaz. This Java port was built using https://github.com/RyanAD/jsmaz and https://github.com/tmbo/scala-smaz/. 
 
-This port currently only supports ASCII characters and will throw an exception when trying to compress non-ascii characters.
+**Status:** in development
 
-Usage
-=====
+Features
+* supports UTF-8 character set
+* good test coverage
 
-    Smaz smaz = new Smaz();
-    String testString = "this is a simple test";
-    byte[] compressed = smaz.compress(testString);
-    String uncompressedString = smaz.decompress(compressed);
-    assertEquals(testString, uncompressedString);
+## Getting started
+Add this to your pom.xml:
+
+```xml
+<dependency>
+  <groupId>com.github.davidmoten</groupId>
+  <artifactId>jsmaz</artifactId>
+  <version>VERSION_HERE</version>
+</dependency>
+``` 
+
+# Usage
+```java
+String a = "this is a simple test";
+
+// compress to 10 bytes
+byte[] compressed = Smaz.compress(a);
+
+// decompress
+String b = Smaz.decompress(compressed);
+assertEquals(a, b);
+```
 
 
-License
-=======
-Copyright 2011 icedrake
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
