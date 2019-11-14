@@ -10,6 +10,7 @@ com.github.davidmoten.jsmaz is a Java port of the Smaz short string compression 
 Features
 * supports UTF-8 character set
 * good test coverage
+* supports Java 8+
 
 ## Getting started
 Add this to your pom.xml:
