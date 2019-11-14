@@ -42,12 +42,6 @@ public final class SmazTest {
         assertEquals(10, Smaz.compress(s).length);
     }
     
-    @Test(expected = IllegalArgumentException.class)
-    public void asciiOnlyTest() {
-        String testString = "this is a utf-8 string ÿ";
-        Smaz.compress(testString);
-    }
-
     @Test
     // minus a few that were off by 1 from the c version but match the ruby one
     public void originalSmazCTest() {
@@ -75,4 +69,17 @@ public final class SmazTest {
             assertEquals((int) entry.getValue(), compressionLevel);
         }
     }
+    
+    @Test
+    public void roundTripTestOnUtf8() {
+        String s = "g ÿa";
+        assertEquals(s, Smaz.decompress(Smaz.compress(s)));
+    }
+    
+    @Test
+    public void roundTripTestOnLongUtf8() {
+        String s = "ᚠᛇᚻ᛫ᛒᛦᚦ᛫ᚠᚱᚩᚠᚢᚱ᛫ᚠᛁᚱᚪ᛫ᚷᛖᚻᚹᛦᛚᚳᚢᛗ";
+        assertEquals(s, Smaz.decompress(Smaz.compress(s)));
+    }
+    
 }
