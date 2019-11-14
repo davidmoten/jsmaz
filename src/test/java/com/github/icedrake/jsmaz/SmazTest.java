@@ -21,6 +21,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Random;
 
 import org.junit.Test;
 
@@ -47,6 +48,23 @@ public final class SmazTest {
         StringBuilder b = new StringBuilder();
         for (int i = 0; i < 128; i++) {
             b.append((char) i);
+        }
+        String s = b.toString();
+        assertEquals(s, Smaz.decompress(Smaz.compress(s)));
+    }
+    
+    @Test
+    public void roundTripUtf8Extremes() {
+        String s = "\u0000\u1000\u9999";
+        assertEquals(s, Smaz.decompress(Smaz.compress(s)));
+    }
+    
+    @Test
+    public void roundTripRandomAscii() {
+        Random r = new Random();
+        StringBuilder b = new StringBuilder();
+        for (int i = 0; i < 1024*1024; i++) {
+            b.append((char) r.nextInt(128));
         }
         String s = b.toString();
         assertEquals(s, Smaz.decompress(Smaz.compress(s)));
