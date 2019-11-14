@@ -37,10 +37,10 @@ public final class Smaz {
 
     private static final int MAX_ASCII = 127;
 
-    private static final int UTF8_AHEAD = 253;
-    private static final int SINGLE_CHAR_ASCII = 254;
-    private static final int MULTI_CHAR_ASCII = 255;
-
+    private static final int CODE_UTF8_AHEAD = 253;
+    private static final int CODE_SINGLE_CHAR_ASCII = 254;
+    private static final int CODE_MULTI_CHAR_ASCII = 255;
+    
     private static final int MAXIMAL_VERB_BUFFER_LENGTH = 256;
 
     private static final int CODE_HASH_MAP_SIZE = 241;
@@ -200,7 +200,7 @@ public final class Smaz {
                 }
                 flushVerbBuffer(verb, output);
                 ByteBuffer encoded = StandardCharsets.UTF_8.encode(utf8Str.toString());
-                output.write(UTF8_AHEAD);
+                output.write(CODE_UTF8_AHEAD);
                 output.write(encoded.limit());
                 try {
                     output.write(Arrays.copyOf(encoded.array(), encoded.limit()));
@@ -238,10 +238,10 @@ public final class Smaz {
      */
     private static void outputVerb(ByteArrayOutputStream baos, String str) {
         if (str.length() == 1) {
-            baos.write(SINGLE_CHAR_ASCII);
+            baos.write(CODE_SINGLE_CHAR_ASCII);
             baos.write(str.toCharArray()[0]);
         } else {
-            baos.write(MULTI_CHAR_ASCII);
+            baos.write(CODE_MULTI_CHAR_ASCII);
             baos.write(str.length());
             try {
                 baos.write(str.getBytes());
@@ -268,15 +268,15 @@ public final class Smaz {
         int i = offset;
         while (i < length + offset) {
             char b = (char) (0xFF & strBytes[i]);
-            if (b == UTF8_AHEAD) {
+            if (b == CODE_UTF8_AHEAD) {
                 i += 1;
                 byte utf8Length = strBytes[i];
                 out.append(new String(strBytes, i + 1, utf8Length, StandardCharsets.UTF_8));
                 i += utf8Length;
-            } else if (b == SINGLE_CHAR_ASCII) {
+            } else if (b == CODE_SINGLE_CHAR_ASCII) {
                 i += 1;
                 out.append((char) strBytes[i]);
-            } else if (b == MULTI_CHAR_ASCII) {
+            } else if (b == CODE_MULTI_CHAR_ASCII) {
                 i += 1;
                 byte decodedLength = strBytes[i];
                 int j = 1;
