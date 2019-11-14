@@ -15,23 +15,33 @@
  */
 package com.github.icedrake.jsmaz;
 
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
 
-import static org.junit.Assert.*;
+import java.nio.charset.StandardCharsets;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import org.junit.Test;
 
 /**
  * @author icedrake
+ * @author davidmoten
  */
-public class SmazTest {
+public final class SmazTest {
 
     @Test
-    public void simpleTest() {
-        String testString = "this is a simple test";
-        byte[] compressed = Smaz.compress(testString);
-        String uncompressedString = Smaz.decompress(compressed);
-        assertEquals(testString, uncompressedString);
+    public void roundTripTestOnPlainAscii() {
+        String s = "this is a simple test";
+        assertEquals(s, Smaz.decompress(Smaz.compress(s)));
     }
-
+    
+    @Test
+    public void testCompressionIsBetterThan50PercentForSimpleString() {
+        String s = "this is a simple test";
+        assertEquals(10, Smaz.compress(s).length);
+    }
+    
     @Test(expected = IllegalArgumentException.class)
     public void asciiOnlyTest() {
         String testString = "this is a utf-8 string ÿ";
@@ -41,49 +51,28 @@ public class SmazTest {
     @Test
     // minus a few that were off by 1 from the c version but match the ruby one
     public void originalSmazCTest() {
-        String[] strings = {
-                "This is a small string",
-                "foobar",
-                "the end",
-                "not-a-g00d-Exampl333",
-                "Smaz is a simple compression library",
-                "1000 numbers 2000 will 10 20 30 compress very little",
-                "and now a few italian sentences:",
-                "Nel mezzo del cammin di nostra vita, mi ritrovai in una selva oscura",
-                "Mi illumino di immenso",
-                "try it against urls",
-                "http://google.com",
-                "http://programming.reddit.com",
-                "http://github.com/antirez/smaz/tree/master"
-        };
+        
+        Map<String, Integer> c = new LinkedHashMap<String, Integer>();
+        c.put("This is a small string", 50);
+        c.put("foobar", 34);
+        c.put("the end", 58);
+        c.put("not-a-g00d-Exampl333", -15);
+        c.put("Smaz is a simple compression library", 39);
+        c.put("1000 numbers 2000 will 10 20 30 compress very little",10);
+        c.put("and now a few italian sentences:", 41);
+        c.put("Nel mezzo del cammin di nostra vita, mi ritrovai in una selva oscura", 33);
+        c.put("Mi illumino di immenso", 37);
+        c.put("try it against urls", 37);
+        c.put("http://google.com",59);
+        c.put("http://programming.reddit.com",52);
+        c.put("http://github.com/antirez/smaz/tree/master",46);
 
-        String expectedOutput = "'This is a small string' compressed by 50%\n" +
-                "'foobar' compressed by 34%\n" +
-                "'the end' compressed by 58%\n" +
-                "'not-a-g00d-Exampl333' enlarged by 15%\n" +
-                "'Smaz is a simple compression library' compressed by 39%\n" +
-                "'1000 numbers 2000 will 10 20 30 compress very little' compressed by 10%\n" +
-                "'and now a few italian sentences:' compressed by 41%\n" +
-                "'Nel mezzo del cammin di nostra vita, mi ritrovai in una selva oscura' compressed by 33%\n" +
-                "'Mi illumino di immenso' compressed by 37%\n" +
-                "'try it against urls' compressed by 37%\n" +
-                "'http://google.com' compressed by 59%\n" +
-                "'http://programming.reddit.com' compressed by 52%\n" +
-                "'http://github.com/antirez/smaz/tree/master' compressed by 46%\n";
-
-        StringBuilder output = new StringBuilder();
-        for (String str : strings) {
-            byte[] origBytes = str.getBytes();
-            System.out.println(str);
-            byte[] compressedBytes = Smaz.compress(str);
-            int comprlevel = 100 - ((100 * compressedBytes.length) / origBytes.length);
-            if (comprlevel < 0) {
-                output.append(String.format("'%s' enlarged by %d%%\n", str, -comprlevel));
-            } else {
-                output.append(String.format("'%s' compressed by %d%%\n", str, comprlevel));
-            }
+        for (Entry<String, Integer> entry : c.entrySet()) {
+            byte[] origBytes = entry.getKey().getBytes(StandardCharsets.UTF_8);
+            byte[] compressedBytes = Smaz.compress(entry.getKey());
+//            System.out.println(entry + ", originalLength="+ origBytes.length + ", compressedLength=" + compressedBytes.length);
+            int compressionLevel = 100 - ((100 * compressedBytes.length) / origBytes.length);
+            assertEquals((int) entry.getValue(), compressionLevel);
         }
-
-        assertEquals(expectedOutput, output.toString());
     }
 }
