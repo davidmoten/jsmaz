@@ -26,9 +26,14 @@ import java.nio.CharBuffer;
  * <a href="https://github.com/antirez/smaz/">antirez</a> This class is
  * immutable.
  *
- * @author icedrake
+ * @author icedrake 
+ * @author davidmoten made some improvements, notably UTF-8 support
  */
 public final class Smaz {
+
+    private static final int MAX_ASCII = 127;
+    private static final int SINGLE_CHAR_ASCII = 254;
+    private static final int MULTI_CHAR_ASCII = 255;
 
     private Smaz() {
         // prevent instantiation
@@ -193,10 +198,10 @@ public final class Smaz {
      */
     private static void outputVerb(ByteArrayOutputStream baos, String str) {
         if (str.length() == 1) {
-            baos.write(254);
+            baos.write(SINGLE_CHAR_ASCII);
             baos.write(str.toCharArray()[0]);
         } else {
-            baos.write(255);
+            baos.write(MULTI_CHAR_ASCII);
             baos.write(str.length());
             try {
                 baos.write(str.getBytes());
@@ -209,7 +214,7 @@ public final class Smaz {
     private static void confirmOnlyAscii(String input) {
         char[] chars = input.toCharArray();
         for (char c : chars) {
-            if (c > 127)
+            if (c > MAX_ASCII)
                 throw new IllegalArgumentException("Only ASCII can be smazed at this time");
         }
     }
@@ -225,9 +230,9 @@ public final class Smaz {
         StringBuilder out = new StringBuilder();
         for (int i = 0; i < strBytes.length; i++) {
             char b = (char) (0xFF & strBytes[i]);
-            if (b == 254) {
+            if (b == SINGLE_CHAR_ASCII) {
                 out.append((char) strBytes[++i]);
-            } else if (b == 255) {
+            } else if (b == MULTI_CHAR_ASCII) {
                 byte length = strBytes[++i];
                 for (int j = 1; j <= length; j++) {
                     out.append((char) strBytes[i + j]);
