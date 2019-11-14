@@ -17,12 +17,9 @@
 package com.github.icedrake.jsmaz;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 
 /**
  * Smaz class for compression small strings. Port to java from
@@ -40,7 +37,7 @@ public final class Smaz {
     private static final int CODE_UTF8_AHEAD = 253;
     private static final int CODE_SINGLE_CHAR_ASCII = 254;
     private static final int CODE_MULTI_CHAR_ASCII = 255;
-    
+
     private static final int MAXIMAL_VERB_BUFFER_LENGTH = 256;
 
     private static final int CODE_HASH_MAP_SIZE = 241;
@@ -202,11 +199,7 @@ public final class Smaz {
                 ByteBuffer encoded = StandardCharsets.UTF_8.encode(utf8Str.toString());
                 output.write(CODE_UTF8_AHEAD);
                 output.write(encoded.limit());
-                try {
-                    output.write(Arrays.copyOf(encoded.array(), encoded.limit()));
-                } catch (IOException e) {
-                    throw new UncheckedIOException(e);
-                }
+                output.write(encoded.array(), 0, encoded.limit());
 
                 // Reposition the cursor on the first character that is an
                 // ascii char after the utf8 string
@@ -243,18 +236,16 @@ public final class Smaz {
         } else {
             baos.write(CODE_MULTI_CHAR_ASCII);
             baos.write(str.length());
-            try {
-                baos.write(str.getBytes());
-            } catch (IOException e) {
-                throw new UncheckedIOException(e);
-            }
+            byte[] b = str.getBytes(StandardCharsets.UTF_8);
+            baos.write(b, 0, b.length);
         }
     }
 
     /**
      * Decompress byte array from compress back into String
      *
-     * @param strBytes bytes to decompress
+     * @param strBytes
+     *            bytes to decompress
      * @return decompressed String
      * @see Smaz#compress(String)
      */
