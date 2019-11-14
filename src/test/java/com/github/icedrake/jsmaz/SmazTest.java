@@ -62,12 +62,14 @@ public final class SmazTest {
     @Test
     public void roundTripRandomAscii() {
         Random r = new Random();
-        StringBuilder b = new StringBuilder();
-        for (int i = 0; i < 1024 * 1024; i++) {
-            b.append((char) r.nextInt(128));
+        for (int i = 0; i < 1000; i++) {
+            StringBuilder b = new StringBuilder();
+            for (int j = 0; j < 1024; j++) {
+                b.append((char) r.nextInt(128));
+            }
+            String s = b.toString();
+            assertEquals(s, Smaz.decompress(Smaz.compress(s)), s);
         }
-        String s = b.toString();
-        assertEquals(s, Smaz.decompress(Smaz.compress(s)));
     }
 
     @Test
