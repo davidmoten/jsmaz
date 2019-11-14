@@ -29,9 +29,9 @@ String a = "this is a simple test";
 // compress to 10 bytes
 byte[] compressed = Smaz.compress(a);
 
-// decompress
+// decompress, b will be the same as a
 String b = Smaz.decompress(compressed);
-assertEquals(a, b);
+
 ```
 
 
