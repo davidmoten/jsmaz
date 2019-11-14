@@ -19,28 +19,38 @@ package com.github.icedrake.jsmaz;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 /**
  * Smaz class for compression small strings. Port to java from
  * <a href="https://github.com/antirez/smaz/">antirez</a> This class is
  * immutable.
  *
- * @author icedrake 
- * @author davidmoten made some improvements, notably UTF-8 support
+ * @author icedrake
+ * @author davidmoten made some improvements, notably UTF-8 support with thanks
+ *         to https://github.com/tmbo/scala-smaz.
  */
 public final class Smaz {
 
     private static final int MAX_ASCII = 127;
+
+    private static final int UTF8_AHEAD = 253;
     private static final int SINGLE_CHAR_ASCII = 254;
     private static final int MULTI_CHAR_ASCII = 255;
+
+    private static final int MAXIMAL_VERB_BUFFER_LENGTH = 256;
+
+    private static final int CODE_HASH_MAP_SIZE = 241;
 
     private Smaz() {
         // prevent instantiation
     }
 
     /* Compression CODEBOOK, used for compression */
-    private static final String CODEBOOK[] = { "\002s,\266", "\003had\232\002leW", "\003on \216", "", "\001yS",
+    private static final String[] CODEBOOK = { "\002s,\266", "\003had\232\002leW", "\003on \216", "", "\001yS",
             "\002ma\255\002li\227", "\003or \260", "", "\002ll\230\003s t\277", "\004fromg\002mel", "", "\003its\332",
             "\001z\333", "\003ingF", "\001>\336", "\001 \000\003   (\002nc\344", "\002nd=\003 on\312",
             "\002ne\213\003hat\276\003re q", "", "\002ngT\003herz\004have\306\003s o\225", "",
@@ -76,7 +86,7 @@ public final class Smaz {
             "\002la\211", "\001<\341", "\003, a\224" };
 
     /* Reverse compression CODEBOOK, used for decompression */
-    private static final String REVERSE_CODEBOOK[] = { " ", "the", "e", "t", "a", "of", "o", "and", "i", "n", "s", "e ",
+    private static final String[] REVERSE_CODEBOOK = { " ", "the", "e", "t", "a", "of", "o", "and", "i", "n", "s", "e ",
             "r", " th", " t", "in", "he", "th", "h", "he ", "to", "\r\n", "l", "s ", "d", " a", "an", "er", "c", " o",
             "d ", "on", " of", "re", "of ", "t ", ", ", "is", "u", "at", "   ", "n ", "or", "which", "f", "m", "as",
             "it", "that", "\n", "was", "en", "  ", " w", "es", " an", " i", "\r", "f ", "g", "p", "nd", " s", "nd ",
@@ -100,94 +110,124 @@ public final class Smaz {
      * @return byte array
      */
     public static byte[] compress(String inString) {
-        confirmOnlyAscii(inString);
 
         StringBuilder verb = new StringBuilder();
         ByteArrayOutputStream output = new ByteArrayOutputStream();
-
         CharBuffer charBuffer = CharBuffer.wrap(inString);
-        int inlen;
+        int remainingCharacters = charBuffer.remaining();
 
-        // loop through input looking for matches in codebook
-        while ((inlen = charBuffer.remaining()) > 0) {
-            int h1, h2, h3;
+        while (remainingCharacters > 0) {
+            int hashForLength1 = 0;
+            int hashForLength2 = 0;
+            int hashForLength3 = 0;
             charBuffer.mark();
-            h1 = h2 = charBuffer.get() << 3;
-            if (inlen > 1)
-                h2 += charBuffer.get();
-            if (inlen > 2) {
-                h3 = h2 ^ charBuffer.get();
-            } else {
-                h3 = 0;
-            }
-            charBuffer.reset();
+            char current = charBuffer.get();
+            if (isAscii(current)) {
+                hashForLength1 = current << 3;
+                hashForLength2 = hashForLength1;
 
-            int j = 7;
-            if (j > inlen)
-                j = inlen;
-
-            boolean found = false;
-
-            /*
-             * Try to lookup substrings into the codebook, starting from the longer to the
-             * shorter substrings
-             */
-            for (; j > 0; j--) {
-                CharBuffer slot;
-                if (j == 1) {
-                    slot = CharBuffer.wrap(CODEBOOK[h1 % 241]);
-                } else if (j == 2) {
-                    slot = CharBuffer.wrap(CODEBOOK[h2 % 241]);
+                if (remainingCharacters > 1) {
+                    hashForLength2 += charBuffer.get();
+                }
+                if (remainingCharacters > 2) {
+                    hashForLength3 = hashForLength2 ^ charBuffer.get();
                 } else {
-                    slot = CharBuffer.wrap(CODEBOOK[h3 % 241]);
+                    hashForLength3 = 0;
                 }
 
-                int slotLength = slot.length();
-                int slotIndex = 0;
-                int slotEndIndex = slotIndex + j + 1;
-                while (slotLength > 0 && slotEndIndex <= slotLength) {
-                    if (slot.get(slotIndex) == j && inlen >= j && slot.subSequence(slotIndex + 1, slotEndIndex)
-                            .toString().equals(charBuffer.subSequence(0, j).toString())) {
-                        // Match found in codebook
-                        // Add verbatim data if needed
-                        if (verb.length() > 0) {
-                            // output the verbatim data now
-                            outputVerb(output, verb.toString());
-                            verb.setLength(0);
-                        }
-
-                        // Add encoded data and ditch unnecessary part of input string
-                        output.write(slot.get(slot.get(slotIndex) + 1 + slotIndex));
-                        charBuffer.position(charBuffer.position() + j);
-                        inlen -= j;
-                        found = true;
-                        break;
+                charBuffer.reset();
+                int j = 7;
+                if (j > remainingCharacters) {
+                    j = remainingCharacters;
+                }
+                boolean found = false;
+                while (j > 0) {
+                    final CharBuffer slot;
+                    if (j == 1) {
+                        slot = CharBuffer.wrap(CODEBOOK[hashForLength1 % CODE_HASH_MAP_SIZE]);
+                    } else if (j == 2) {
+                        slot = CharBuffer.wrap(CODEBOOK[hashForLength2 % CODE_HASH_MAP_SIZE]);
                     } else {
-                        slotIndex++;
-                        slotEndIndex = slotIndex + j + 1;
+                        slot = CharBuffer.wrap(CODEBOOK[hashForLength3 % CODE_HASH_MAP_SIZE]);
+                    }
+                    int slotLength = slot.length();
+                    int slotIndex = 0;
+                    int slotEndIndex = slotIndex + j + 1;
+                    while (!found && slotLength > 0 && slotEndIndex <= slotLength) {
+                        if (slot.get(slotIndex) == j && remainingCharacters >= j
+                                && (slot.subSequence(slotIndex + 1, slotEndIndex).toString()
+                                        .equals(charBuffer.subSequence(0, j).toString()))) {
+                            flushVerbBuffer(verb, output);
+                            output.write(slot.get(slot.get(slotIndex) + 1 + slotIndex));
+                            charBuffer.position(charBuffer.position() + j);
+                            remainingCharacters -= j;
+                            found = true;
+                        } else {
+                            slotIndex += 1;
+                            slotEndIndex = slotIndex + j + 1;
+                        }
+                    }
+                    j -= 1;
+                }
+                if (!found) {
+                    if (remainingCharacters > 0) {
+                        remainingCharacters -= 1;
+                        verb.append(charBuffer.subSequence(0, 1).toString());
+                    }
+                    charBuffer.position(charBuffer.position() + 1);
+                }
+                int verbLength = verb.length();
+                if (verbLength == MAXIMAL_VERB_BUFFER_LENGTH || verbLength > 0 && remainingCharacters == 0) {
+                    flushVerbBuffer(verb, output);
+                }
+            } else {
+                //////////////////
+                // handleUTF8
+                /////////////////
+                StringBuilder utf8Str = new StringBuilder();
+                int next = current;
+                boolean reachedEndOfString = false;
+                // Read until we read the first ascii character or we reach the end of the
+                // string
+                while (!isAscii(next) && !reachedEndOfString) {
+                    utf8Str.append((char) next);
+                    remainingCharacters -= 1;
+                    if (remainingCharacters > 0) {
+                        next = charBuffer.get();
+                    } else {
+                        reachedEndOfString = true;
                     }
                 }
-            }
-
-            // match not found, add to verbatim
-            if (!found) {
-                if (inlen > 0) {
-                    inlen--;
-                    verb.append(charBuffer.subSequence(0, 1).toString());
+                flushVerbBuffer(verb, output);
+                ByteBuffer encoded = StandardCharsets.UTF_8.encode(utf8Str.toString());
+                output.write(UTF8_AHEAD);
+                output.write(encoded.limit());
+                try {
+                    output.write(Arrays.copyOf(encoded.array(), encoded.limit()));
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
                 }
-                charBuffer.position(charBuffer.position() + 1);
-            }
 
-            // If the verbatim buffer is getting too long or we're at the end of the doc
-            // throw the verbatim buffer to the output queue
-            int verbLength = verb.length();
-            if (verbLength == 256 || verbLength > 0 && inlen == 0) {
-                outputVerb(output, verb.toString());
-                verb.setLength(0);
+                // Reposition the cursor on the first character that is an
+                // ascii char after the utf8 string
+                if (remainingCharacters > 0) {
+                    charBuffer.position(charBuffer.position() - 1);
+                }
             }
-
+            remainingCharacters = charBuffer.remaining();
         }
         return output.toByteArray();
+    }
+
+    private static boolean isAscii(int c) {
+        return c <= MAX_ASCII;
+    }
+
+    private static void flushVerbBuffer(StringBuilder verb, ByteArrayOutputStream output) {
+        if (verb.length() > 0) {
+            outputVerb(output, verb.toString());
+            verb.setLength(0);
+        }
     }
 
     /**
@@ -211,39 +251,46 @@ public final class Smaz {
         }
     }
 
-    private static void confirmOnlyAscii(String input) {
-        char[] chars = input.toCharArray();
-        for (char c : chars) {
-            if (c > MAX_ASCII)
-                throw new IllegalArgumentException("Only ASCII can be smazed at this time");
-        }
-    }
-
     /**
      * Decompress byte array from compress back into String
      *
-     * @param strBytes
+     * @param strBytes bytes to decompress
      * @return decompressed String
      * @see Smaz#compress(String)
      */
     public static String decompress(byte[] strBytes) {
+        return decompress(strBytes, 0, strBytes.length);
+    }
+
+    public static String decompress(byte[] strBytes, int offset, int length) {
+
         StringBuilder out = new StringBuilder();
-        for (int i = 0; i < strBytes.length; i++) {
+        int i = offset;
+        while (i < length + offset) {
             char b = (char) (0xFF & strBytes[i]);
-            if (b == SINGLE_CHAR_ASCII) {
-                out.append((char) strBytes[++i]);
+            if (b == UTF8_AHEAD) {
+                i += 1;
+                byte utf8Length = strBytes[i];
+                out.append(new String(strBytes, i + 1, utf8Length, StandardCharsets.UTF_8));
+                i += utf8Length;
+            } else if (b == SINGLE_CHAR_ASCII) {
+                i += 1;
+                out.append((char) strBytes[i]);
             } else if (b == MULTI_CHAR_ASCII) {
-                byte length = strBytes[++i];
-                for (int j = 1; j <= length; j++) {
+                i += 1;
+                byte decodedLength = strBytes[i];
+                int j = 1;
+                while (j <= decodedLength) {
                     out.append((char) strBytes[i + j]);
+                    j += 1;
                 }
-                i += length;
+                i += decodedLength;
             } else {
-                int loc = (0xFF & b);
+                int loc = 0xFF & b;
                 out.append(REVERSE_CODEBOOK[loc]);
             }
+            i += 1;
         }
         return out.toString();
     }
-
 }
