@@ -18,7 +18,9 @@ package com.github.icedrake.jsmaz;
 import static org.junit.Assert.assertEquals;
 
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
@@ -62,13 +64,26 @@ public final class SmazTest {
     @Test
     public void roundTripRandomAscii() {
         Random r = new Random();
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < 100000; i++) {
+            List<Integer> chars = new ArrayList<>();
             StringBuilder b = new StringBuilder();
             for (int j = 0; j < 1024; j++) {
-                b.append((char) r.nextInt(128));
+                int n = r.nextInt(128);
+                b.append((char) n);
+                chars.add(n);
             }
             String s = b.toString();
-            assertEquals(s, Smaz.decompress(Smaz.compress(s)), s);
+            String actual = "";
+            try {
+                actual = Smaz.decompress(Smaz.compress(s));
+            } catch (Throwable t) {
+                System.out.println("these chars failed: " + chars);
+                throw t;
+            }
+            if (!actual.equals(s)) {
+                System.out.println("these chars failed: " + chars);
+                throw new AssertionError("round trip failed");
+            }
         }
     }
 
