@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -35,7 +36,10 @@ public final class SmazTest {
 
     @Test
     public void roundTripTestOnPlainAscii() {
-        String s = "this is a simple test";
+        checkRoundTrip("this is a simple test");
+    }
+
+    private static void checkRoundTrip(String s) {
         assertEquals(s, Smaz.decompress(Smaz.compress(s)));
     }
 
@@ -52,19 +56,24 @@ public final class SmazTest {
             b.append((char) i);
         }
         String s = b.toString();
-        assertEquals(s, Smaz.decompress(Smaz.compress(s)));
+        checkRoundTrip(s);
     }
 
     @Test
     public void roundTripUtf8Extremes() {
-        String s = "\u0000\u1000\u9999";
-        assertEquals(s, Smaz.decompress(Smaz.compress(s)));
+        checkRoundTrip("\u0000\u1000\u9999");
     }
 
     @Test
+    public void roundTripSpecialCharacters() {
+        checkRoundTrip(".com");
+    }
+    
+    @Test
+    @Ignore
     public void roundTripRandomAscii() {
         Random r = new Random();
-        for (int i = 0; i < 100000; i++) {
+        for (int i = 0; i < Integer.MAX_VALUE; i++) {
             List<Integer> chars = new ArrayList<>();
             StringBuilder b = new StringBuilder();
             for (int j = 0; j < 1024; j++) {
@@ -89,8 +98,7 @@ public final class SmazTest {
 
     @Test
     public void roundTripEmptyString() {
-        String s = "";
-        assertEquals(s, Smaz.decompress(Smaz.compress(s)));
+        checkRoundTrip("");
     }
 
     @Test
@@ -99,8 +107,7 @@ public final class SmazTest {
         for (int i = 0; i < 1024 * 1024; i++) {
             b.append((char) (i % 128));
         }
-        String s = b.toString();
-        assertEquals(s, Smaz.decompress(Smaz.compress(s)));
+        checkRoundTrip(b.toString());
     }
 
     @Test
@@ -118,9 +125,9 @@ public final class SmazTest {
         c.put("Nel mezzo del cammin di nostra vita, mi ritrovai in una selva oscura", 33);
         c.put("Mi illumino di immenso", 37);
         c.put("try it against urls", 37);
-        c.put("http://google.com", 59);
-        c.put("http://programming.reddit.com", 52);
-        c.put("http://github.com/antirez/smaz/tree/master", 46);
+        c.put("http://google.com", 48);
+        c.put("http://programming.reddit.com", 45);
+        c.put("http://github.com/antirez/smaz/tree/master", 41);
 
         for (Entry<String, Integer> entry : c.entrySet()) {
             byte[] origBytes = entry.getKey().getBytes(StandardCharsets.UTF_8);
@@ -134,14 +141,12 @@ public final class SmazTest {
 
     @Test
     public void roundTripTestOnUtf8() {
-        String s = "g ÿa";
-        assertEquals(s, Smaz.decompress(Smaz.compress(s)));
+        checkRoundTrip("g ÿa");
     }
 
     @Test
     public void roundTripTestOnLongUtf8() {
-        String s = "ᚠᛇᚻ᛫ᛒᛦᚦ᛫ᚠᚱᚩᚠᚢᚱ᛫ᚠᛁᚱᚪ᛫ᚷᛖᚻᚹᛦᛚᚳᚢᛗ";
-        assertEquals(s, Smaz.decompress(Smaz.compress(s)));
+        checkRoundTrip("ᚠᛇᚻ᛫ᛒᛦᚦ᛫ᚠᚱᚩᚠᚢᚱ᛫ᚠᛁᚱᚪ᛫ᚷᛖᚻᚹᛦᛚᚳᚢᛗ");
     }
 
     @Test

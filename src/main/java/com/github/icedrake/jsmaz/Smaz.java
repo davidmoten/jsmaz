@@ -75,30 +75,36 @@ public final class Smaz {
             "\004were]", "", "\002ch\231\002l \264\001p<", "", "", "\003one\256", "", "\003he \023\002dej",
             "\003ter\270", "\002cou", "", "\002by\177\002di\201\002eax", "", "\002ec\327", "\002edB", "\002ee\353", "",
             "", "\001r\f\002n )", "", "", "", "\002el\262", "", "\003in i\002en3", "", "\002o `\001s\n", "",
-            "\002er\033", "\003is t\002es6", "", "\002ge\371", "\004.com\375", "\002fo\334\003our\330",
-            "\003ch \301\001t\003", "\002hab", "", "\003men\374", "", "\002he\020", "", "", "\001u&", "\002hif", "",
-            "\003not\204\002ic\203", "\003ed @\002id\355", "", "", "\002ho\273", "\002r K\001vm", "", "", "",
-            "\003t t\257\002il\360", "\002im\342", "\003en \317\002in\017", "\002io\220", "\002s \027\001wA", "",
-            "\003er |", "\003es ~\002is%", "\002it/", "", "\002iv\272", "", "\002t #\u0007http://C\001x\372",
-            "\002la\211", "\001<\341", "\003, a\224" };
+            "\002er\033", "\003is t\002es6", "", "\002ge\371", "", "\002fo\334\003our\330", "\003ch \301\001t\003",
+            "\002hab", "", "\003men\374", "", "\002he\020", "", "", "\001u&", "\002hif", "", "\003not\204\002ic\203",
+            "\003ed @\002id\355", "", "", "\002ho\273", "\002r K\001vm", "", "", "", "\003t t\257\002il\360",
+            "\002im\342", "\003en \317\002in\017", "\002io\220", "\002s \027\001wA", "", "\003er |", "\003es ~\002is%",
+            "\002it/", "", "\002iv\272", "", "\002t #\u0007http://C\001x\372", "\002la\211", "\001<\341",
+            "\003, a\224" };
 
     /* Reverse compression CODEBOOK, used for decompression */
-    private static final String[] REVERSE_CODEBOOK = { " ", "the", "e", "t", "a", "of", "o", "and", "i", "n", "s", "e ",
-            "r", " th", " t", "in", "he", "th", "h", "he ", "to", "\r\n", "l", "s ", "d", " a", "an", "er", "c", " o",
-            "d ", "on", " of", "re", "of ", "t ", ", ", "is", "u", "at", "   ", "n ", "or", "which", "f", "m", "as",
-            "it", "that", "\n", "was", "en", "  ", " w", "es", " an", " i", "\r", "f ", "g", "p", "nd", " s", "nd ",
-            "ed ", "w", "ed", "http://", "for", "te", "ing", "y ", "The", " c", "ti", "r ", "his", "st", " in", "ar",
-            "nt", ",", " to", "y", "ng", " h", "with", "le", "al", "to ", "b", "ou", "be", "were", " b", "se", "o ",
-            "ent", "ha", "ng ", "their", "\"", "hi", "from", " f", "in ", "de", "ion", "me", "v", ".", "ve", "all",
-            "re ", "ri", "ro", "is ", "co", "f t", "are", "ea", ". ", "her", " m", "er ", " p", "es ", "by", "they",
-            "di", "ra", "ic", "not", "s, ", "d t", "at ", "ce", "la", "h ", "ne", "as ", "tio", "on ", "n t", "io",
-            "we", " a ", "om", ", a", "s o", "ur", "li", "ll", "ch", "had", "this", "e t", "g ", "e\r\n", " wh", "ere",
-            " co", "e o", "a ", "us", " d", "ss", "\n\r\n", "\r\n\r", "=\"", " be", " e", "s a", "ma", "one", "t t",
-            "or ", "but", "el", "so", "l ", "e s", "s,", "no", "ter", " wa", "iv", "ho", "e a", " r", "hat", "s t",
-            "ns", "ch ", "wh", "tr", "ut", "/", "have", "ly ", "ta", " ha", " on", "tha", "-", " l", "ati", "en ", "pe",
-            " re", "there", "ass", "si", " fo", "wa", "ec", "our", "who", "its", "z", "fo", "rs", ">", "ot", "un", "<",
-            "im", "th ", "nc", "ate", "><", "ver", "ad", " we", "ly", "ee", " n", "id", " cl", "ac", "il", "</", "rt",
-            " wi", "div", "e, ", " it", "whi", " ma", "ge", "x", "e c", "men", ".com" };
+    // cannot be longer than lowest reserved CODE_* constant (253)
+    private static final String[] REVERSE_CODEBOOK = { " ", "the", "e", "t", "a", "of", "o", "and", "i", "n", "s", "e ", "r", " th",
+            " t", "in", "he", "th", "h", "he ", "to", "\r\n", "l", "s ", "d", " a", "an",
+            "er", "c", " o", "d ", "on", " of", "re", "of ", "t ", ", ", "is", "u", "at",
+            "   ", "n ", "or", "which", "f", "m", "as", "it", "that", "\n", "was", "en",
+            "  ", " w", "es", " an", " i", "\r", "f ", "g", "p", "nd", " s", "nd ", "ed ",
+            "w", "ed", "http://", "for", "te", "ing", "y ", "The", " c", "ti", "r ", "his",
+            "st", " in", "ar", "nt", ",", " to", "y", "ng", " h", "with", "le", "al", "to ",
+            "b", "ou", "be", "were", " b", "se", "o ", "ent", "ha", "ng ", "their", "\"",
+            "hi", "from", " f", "in ", "de", "ion", "me", "v", ".", "ve", "all", "re ",
+            "ri", "ro", "is ", "co", "f t", "are", "ea", ". ", "her", " m", "er ", " p",
+            "es ", "by", "they", "di", "ra", "ic", "not", "s, ", "d t", "at ", "ce", "la",
+            "h ", "ne", "as ", "tio", "on ", "n t", "io", "we", " a ", "om", ", a", "s o",
+            "ur", "li", "ll", "ch", "had", "this", "e t", "g ", "e\r\n", " wh", "ere",
+            " co", "e o", "a ", "us", " d", "ss", "\n\r\n", "\r\n\r", "=\"", " be", " e",
+            "s a", "ma", "one", "t t", "or ", "but", "el", "so", "l ", "e s", "s,", "no",
+            "ter", " wa", "iv", "ho", "e a", " r", "hat", "s t", "ns", "ch ", "wh", "tr",
+            "ut", "/", "have", "ly ", "ta", " ha", " on", "tha", "-", " l", "ati", "en ",
+            "pe", " re", "there", "ass", "si", " fo", "wa", "ec", "our", "who", "its", "z",
+            "fo", "rs", ">", "ot", "un", "<", "im", "th ", "nc", "ate", "><", "ver", "ad",
+            " we", "ly", "ee", " n", "id", " cl", "ac", "il", "</", "rt", " wi", "div",
+            "e, ", " it", "whi", " ma", "ge", "x", "e c", "men" };
 
     /**
      * Returns compressed byte array for the specified string
@@ -283,5 +289,9 @@ public final class Smaz {
             i += 1;
         }
         return out.toString();
+    }
+
+    public static void main(String[] args) {
+        System.out.println(REVERSE_CODEBOOK.length);
     }
 }
