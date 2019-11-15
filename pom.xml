@@ -14,7 +14,7 @@
         <version>0.1</version>
     </parent>
     <artifactId>jsmaz</artifactId>
-    <version>0.1</version>
+    <version>0.2-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>${project.artifactId}</name>
     <description>Small string compression library</description>
@@ -40,7 +40,7 @@
         <connection>scm:git:https://github.com/davidmoten/jsmaz.git</connection>
         <developerConnection>scm:git:https://github.com/davidmoten/jsmaz.git</developerConnection>
         <url>scm:git:https://github.com:davidmoten/jsmaz.git</url>
-        <tag>0.1</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <properties>
