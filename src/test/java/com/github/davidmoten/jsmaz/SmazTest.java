@@ -25,10 +25,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
 
-import org.junit.Ignore;
 import org.junit.Test;
-
-import com.github.davidmoten.jsmaz.Smaz;
 
 /**
  * @author icedrake
