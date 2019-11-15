@@ -38,6 +38,12 @@
             <name>David Moten</name>
         </developer>
     </developers>
+    <scm>
+        <connection>scm:git:https://github.com/davidmoten/jsmaz.git</connection>
+        <developerConnection>scm:git:https://github.com/davidmoten/jsmaz.git</developerConnection>
+        <url>scm:git:https://github.com:davidmoten/jsmaz.git</url>
+        <tag>HEAD</tag>
+    </scm>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
