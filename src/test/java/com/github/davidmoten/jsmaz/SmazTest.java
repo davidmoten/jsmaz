@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
  */
-package com.github.icedrake.jsmaz;
+package com.github.davidmoten.jsmaz;
 
 import static org.junit.Assert.assertEquals;
 
@@ -27,6 +27,8 @@ import java.util.Random;
 
 import org.junit.Ignore;
 import org.junit.Test;
+
+import com.github.davidmoten.jsmaz.Smaz;
 
 /**
  * @author icedrake

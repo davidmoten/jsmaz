@@ -14,7 +14,7 @@
    limitations under the License.
 
  */
-package com.github.icedrake.jsmaz;
+package com.github.davidmoten.jsmaz;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
