@@ -68,12 +68,11 @@ public final class SmazTest {
     public void roundTripSpecialCharacters() {
         checkRoundTrip(".com");
     }
-    
+
     @Test
-    @Ignore
-    public void roundTripRandomAscii() {
+    public void roundTripRandomAsciiManyTimes() {
         Random r = new Random();
-        for (int i = 0; i < Integer.MAX_VALUE; i++) {
+        for (int i = 0; i < 10000; i++) {
             List<Integer> chars = new ArrayList<>();
             StringBuilder b = new StringBuilder();
             for (int j = 0; j < 1024; j++) {

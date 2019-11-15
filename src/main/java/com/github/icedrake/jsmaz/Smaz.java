@@ -291,7 +291,4 @@ public final class Smaz {
         return out.toString();
     }
 
-    public static void main(String[] args) {
-        System.out.println(REVERSE_CODEBOOK.length);
-    }
 }
