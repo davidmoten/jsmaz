@@ -107,8 +107,8 @@ public final class Smaz {
     /**
      * Returns compressed byte array for the specified string
      *
-     * @param inString
-     * @return byte array
+     * @param inString string to compress
+     * @return compressed bytes
      */
     public static byte[] compress(String inString) {
 
