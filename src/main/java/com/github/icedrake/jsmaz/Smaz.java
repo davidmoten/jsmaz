@@ -40,12 +40,6 @@ public final class Smaz {
 
     private static final int MAXIMAL_VERB_BUFFER_LENGTH = 256;
 
-    private static final int CODE_HASH_MAP_SIZE = 241;
-
-    private Smaz() {
-        // prevent instantiation
-    }
-
     /* Compression CODEBOOK, used for compression */
     private static final String[] CODEBOOK = { "\002s,\266", "\003had\232\002leW", "\003on \216", "", "\001yS",
             "\002ma\255\002li\227", "\003or \260", "", "\002ll\230\003s t\277", "\004fromg\002mel", "", "\003its\332",
@@ -105,7 +99,11 @@ public final class Smaz {
             "fo", "rs", ">", "ot", "un", "<", "im", "th ", "nc", "ate", "><", "ver", "ad",
             " we", "ly", "ee", " n", "id", " cl", "ac", "il", "</", "rt", " wi", "div",
             "e, ", " it", "whi", " ma", "ge", "x", "e c", "men" };
-
+    
+    private Smaz() {
+        // prevent instantiation
+    }
+    
     /**
      * Returns compressed byte array for the specified string
      *
@@ -147,11 +145,11 @@ public final class Smaz {
                 while (j > 0) {
                     final CharBuffer slot;
                     if (j == 1) {
-                        slot = CharBuffer.wrap(CODEBOOK[hashForLength1 % CODE_HASH_MAP_SIZE]);
+                        slot = CharBuffer.wrap(CODEBOOK[hashForLength1 % CODEBOOK.length]);
                     } else if (j == 2) {
-                        slot = CharBuffer.wrap(CODEBOOK[hashForLength2 % CODE_HASH_MAP_SIZE]);
+                        slot = CharBuffer.wrap(CODEBOOK[hashForLength2 % CODEBOOK.length]);
                     } else {
-                        slot = CharBuffer.wrap(CODEBOOK[hashForLength3 % CODE_HASH_MAP_SIZE]);
+                        slot = CharBuffer.wrap(CODEBOOK[hashForLength3 % CODEBOOK.length]);
                     }
                     int slotLength = slot.length();
                     int slotIndex = 0;
